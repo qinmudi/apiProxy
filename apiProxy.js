@@ -10,17 +10,25 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(cors());
 
-var host = 'dev.erikqin.com',
+var host = 'dev.itrip.qq.com',
     port = 80;
 
-app.get('/config', function(req, res, next) {
-    var qs = req.query;
-    if (qs['host'] || qs['port']) {
-        host = qs['host'] ? qs['host'] : host;
-        port = qs['port'] ? qs['port'] : port;
-        res.send('恭喜设置成功，你的host：' + host + '，port：' + port);
+app.get('/*', function(req, res, next) {
+    if (req.url.indexOf('config') != -1) {
+        var qs = req.query;
+        if (qs['host'] || qs['port']) {
+            host = qs['host'] ? qs['host'] : host;
+            port = qs['port'] ? qs['port'] : port;
+            res.send('恭喜设置成功，你的host：' + host + '，port：' + port);
+        } else {
+            res.send('oh,天啊，设置错误，请检查你的参数时候正确？');
+        }
     } else {
-        res.send('oh,天啊，设置错误，请检查你的参数时候正确？');
+        request.get('http://' + host + ':' + port + req.url, function(err, httpResponse, body) {
+            console.log('http://' + host + ':' + port + req.url);
+            if (err) return;
+            res.send(body);
+        })
     }
 });
 
@@ -32,6 +40,7 @@ app.post('/*', function(req, res, next) {
     request.post(url, {
         form: postData
     }, function(err, httpResponse, body) {
+        console.log(err);
         if (err) return;
         res.send(body);
     });
